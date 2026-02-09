@@ -35,12 +35,20 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Info */}
+          {/* Rechtliches */}
           <div>
-            <h3 className="font-semibold mb-3">Info</h3>
+            <h3 className="font-semibold mb-3">Rechtliches</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>100% Non-Profit</li>
-              <li>Open Source</li>
+              <li>
+                <Link href="/impressum" className="hover:text-foreground transition-colors">
+                  Impressum
+                </Link>
+              </li>
+              <li>
+                <Link href="/datenschutz" className="hover:text-foreground transition-colors">
+                  Datenschutzerklärung
+                </Link>
+              </li>
               <li>Made with <Heart className="inline h-3 w-3 text-red-500" /> for Founders</li>
             </ul>
           </div>
