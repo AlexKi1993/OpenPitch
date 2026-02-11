@@ -1,4 +1,4 @@
-import { Lightbulb, Heart, Code, Globe, Rocket, Users, Mail } from "lucide-react";
+import { Lightbulb, Heart, Code, Globe, Rocket, Users } from "lucide-react";
 import Link from "next/link";
 
 export default function UeberUnsPage() {
@@ -84,35 +84,6 @@ export default function UeberUnsPage() {
               Die Community entscheidet was gut ist. Durch Votes,
               Kommentare und Kollaboration entstehen die besten Projekte.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Founder */}
-      <section className="mb-10">
-        <h2 className="text-xl font-semibold mb-4">Der Gründer</h2>
-        <div className="rounded-xl border border-border p-6 flex gap-5 items-start">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white text-xl font-bold shrink-0">
-            AK
-          </div>
-          <div>
-            <h3 className="font-semibold">Alexander Kirchner</h3>
-            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-              Ideenmensch mit zu vielen Ideen und zu wenig Zeit. Statt die
-              Ideen in meinem Kopf verstauben zu lassen, habe ich OpenPitch
-              gebaut. Mein Ziel: Eine Welt in der gute Ideen nicht an
-              fehlenden Ressourcen scheitern, sondern die richtigen Menschen
-              finden.
-            </p>
-            <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
-              <a
-                href="mailto:alex@makeit4u.de"
-                className="flex items-center gap-1 hover:text-primary transition-colors"
-              >
-                <Mail className="h-3.5 w-3.5" />
-                alex@makeit4u.de
-              </a>
-            </div>
           </div>
         </div>
       </section>
