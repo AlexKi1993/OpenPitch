@@ -85,8 +85,8 @@ export default async function Home() {
               <div className="mt-1 text-sm text-muted-foreground">Mitglieder</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-primary">0 &euro;</div>
-              <div className="mt-1 text-sm text-muted-foreground">Kostet es</div>
+              <div className="text-3xl font-bold text-primary">100%</div>
+              <div className="mt-1 text-sm text-muted-foreground">Kostenlos</div>
             </div>
           </div>
         </div>
