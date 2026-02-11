@@ -20,7 +20,7 @@ export default function ImpressumPage() {
         <section>
           <h2 className="text-lg font-semibold text-foreground">Kontakt</h2>
           <p>
-            E-Mail: alex@makeit4u.de
+            E-Mail: info@openpitch.eu
           </p>
         </section>
 

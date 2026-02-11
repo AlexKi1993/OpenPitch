@@ -15,7 +15,7 @@ export default function DatenschutzPage() {
             <br />
             76891 Erlenbach bei Dahn
             <br />
-            E-Mail: alex@makeit4u.de
+            E-Mail: info@openpitch.eu
           </p>
         </section>
 
@@ -148,7 +148,7 @@ export default function DatenschutzPage() {
             </li>
           </ul>
           <p>
-            Zur Ausübung deiner Rechte wende dich an: alex@makeit4u.de
+            Zur Ausübung deiner Rechte wende dich an: info@openpitch.eu
           </p>
         </section>
 
