@@ -14,6 +14,9 @@ import {
   Lightbulb,
   CheckCircle,
   Users,
+  HandCoins,
+  Handshake,
+  CircleOff,
 } from "lucide-react";
 
 interface Props {
@@ -198,6 +201,65 @@ export default async function IdeaDetailPage({ params }: Props) {
               </p>
             </section>
           )}
+
+          {/* Founder Intention */}
+          <section className="mt-8 rounded-xl border-2 border-primary/20 bg-primary/5 p-6">
+            {idea.self_implement ? (
+              <>
+                <div className="flex items-center gap-2 mb-3">
+                  <Handshake className="h-6 w-6 text-primary" />
+                  <h2 className="text-xl font-semibold">Suche aktiv Unterstützung</h2>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Der Ideengeber möchte diese Idee selbst umsetzen und sucht:
+                </p>
+                {idea.looking_for && (
+                  <div className="mb-3">
+                    <h3 className="text-sm font-medium mb-1">Was wird gesucht:</h3>
+                    <p className="text-muted-foreground whitespace-pre-wrap">
+                      {idea.looking_for}
+                    </p>
+                  </div>
+                )}
+                {idea.mvp_budget && (
+                  <div className="flex items-center gap-2">
+                    <HandCoins className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">Geschätztes MVP-Budget:</span>
+                    <span className="rounded-full bg-primary/10 px-3 py-0.5 text-sm font-medium text-primary">
+                      {idea.mvp_budget === "0-1k" && "0 - 1.000 €"}
+                      {idea.mvp_budget === "1k-5k" && "1.000 - 5.000 €"}
+                      {idea.mvp_budget === "5k-15k" && "5.000 - 15.000 €"}
+                      {idea.mvp_budget === "15k-50k" && "15.000 - 50.000 €"}
+                      {idea.mvp_budget === "50k-100k" && "50.000 - 100.000 €"}
+                      {idea.mvp_budget === "100k+" && "100.000 € +"}
+                      {!idea.mvp_budget && "Keine Angabe"}
+                    </span>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 mb-3">
+                  <Lightbulb className="h-6 w-6 text-amber-500" />
+                  <h2 className="text-xl font-semibold">Freie Idee - Suche Umsetzer</h2>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Der Ideengeber gibt diese Idee frei und sucht jemanden, der sie umsetzt.
+                </p>
+                {idea.not_self_reason && (
+                  <div>
+                    <h3 className="text-sm font-medium mb-1 flex items-center gap-1">
+                      <CircleOff className="h-3.5 w-3.5" />
+                      Warum nicht selbst:
+                    </h3>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                      {idea.not_self_reason}
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+          </section>
 
           {/* Collaborators */}
           {collaborators && collaborators.length > 0 && (

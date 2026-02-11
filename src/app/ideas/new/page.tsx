@@ -17,6 +17,10 @@ export default function NewIdeaPage() {
   const [solution, setSolution] = useState("");
   const [targetAudience, setTargetAudience] = useState("");
   const [category, setCategory] = useState("Other");
+  const [selfImplement, setSelfImplement] = useState(false);
+  const [lookingFor, setLookingFor] = useState("");
+  const [mvpBudget, setMvpBudget] = useState("");
+  const [notSelfReason, setNotSelfReason] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [error, setError] = useState("");
@@ -70,6 +74,10 @@ export default function NewIdeaPage() {
         solution,
         target_audience: targetAudience,
         category,
+        self_implement: selfImplement,
+        looking_for: lookingFor,
+        mvp_budget: mvpBudget,
+        not_self_reason: notSelfReason,
       })
       .select()
       .single();
@@ -228,6 +236,85 @@ export default function NewIdeaPage() {
               </option>
             ))}
           </select>
+        </div>
+
+        {/* Self Implement Toggle */}
+        <div className="rounded-xl border border-border p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium">
+                Möchte ich die Idee selbst umsetzen?
+              </label>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Suchst du aktiv nach Mitgründern oder Investoren?
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelfImplement(!selfImplement)}
+              className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors cursor-pointer ${
+                selfImplement ? "bg-primary" : "bg-muted-foreground/30"
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform ${
+                  selfImplement ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+
+          {selfImplement ? (
+            <>
+              {/* Looking for */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Was suchst du? <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={lookingFor}
+                  onChange={(e) => setLookingFor(e.target.value)}
+                  placeholder="z.B. Einen technischen Mitgründer (CTO), Investor für die Seed-Runde, Designer für das MVP..."
+                  required={selfImplement}
+                  rows={3}
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                />
+              </div>
+
+              {/* MVP Budget */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Geschätztes Budget für MVP
+                </label>
+                <select
+                  value={mvpBudget}
+                  onChange={(e) => setMvpBudget(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+                >
+                  <option value="">Keine Angabe</option>
+                  <option value="0-1k">0 - 1.000 €</option>
+                  <option value="1k-5k">1.000 - 5.000 €</option>
+                  <option value="5k-15k">5.000 - 15.000 €</option>
+                  <option value="15k-50k">15.000 - 50.000 €</option>
+                  <option value="50k-100k">50.000 - 100.000 €</option>
+                  <option value="100k+">100.000 € +</option>
+                </select>
+              </div>
+            </>
+          ) : (
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Warum möchtest du es nicht selbst umsetzen?
+              </label>
+              <textarea
+                value={notSelfReason}
+                onChange={(e) => setNotSelfReason(e.target.value)}
+                placeholder="z.B. Keine Zeit, fehlendes technisches Know-How, andere Prioritäten..."
+                rows={2}
+                className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+              />
+            </div>
+          )}
         </div>
 
         {/* Tags */}

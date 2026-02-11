@@ -22,6 +22,10 @@ export interface Idea {
   target_audience: string;
   category: string;
   status: "open" | "in_progress" | "implemented" | "archived";
+  self_implement: boolean;
+  looking_for: string;
+  mvp_budget: string;
+  not_self_reason: string;
   vote_count: number;
   comment_count: number;
   created_at: string;
