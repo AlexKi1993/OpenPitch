@@ -32,6 +32,16 @@ export default function Footer() {
                   Idee pitchen
                 </Link>
               </li>
+              <li>
+                <Link href="/faq" className="hover:text-foreground transition-colors">
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link href="/regeln" className="hover:text-foreground transition-colors">
+                  Nutzungsregeln
+                </Link>
+              </li>
             </ul>
           </div>
 
