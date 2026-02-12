@@ -1,7 +1,8 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import IdeaCard from "@/components/IdeaCard";
 import IdeasFilter from "@/components/IdeasFilter";
-import { Search } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { CATEGORIES } from "@/types/database";
 
 interface Props {
@@ -66,12 +67,21 @@ export default async function IdeasPage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Ideen entdecken</h1>
-        <p className="mt-2 text-muted-foreground">
-          Durchsuche alle gepitchten Geschäftsideen und finde die, die dich
-          begeistert.
-        </p>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Ideen entdecken</h1>
+          <p className="mt-2 text-muted-foreground">
+            Durchsuche alle gepitchten Geschäftsideen und finde die, die dich
+            begeistert.
+          </p>
+        </div>
+        <Link
+          href="/ideas/new"
+          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors"
+        >
+          <Plus className="h-4 w-4" />
+          Idee pitchen
+        </Link>
       </div>
 
       <IdeasFilter
