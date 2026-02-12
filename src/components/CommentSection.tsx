@@ -26,12 +26,13 @@ export default function CommentSection({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!content.trim() || !userId) return;
+    if (content.trim().length > 5000) return;
 
     setLoading(true);
     const { error } = await supabase.from("comments").insert({
       idea_id: ideaId,
       author_id: userId,
-      content: content.trim(),
+      content: content.trim().slice(0, 5000),
     });
 
     if (!error) {
@@ -56,6 +57,7 @@ export default function CommentSection({
               onChange={(e) => setContent(e.target.value)}
               placeholder="Schreibe einen Kommentar..."
               rows={3}
+              maxLength={5000}
               className="flex-1 rounded-lg border border-border bg-background px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-none"
             />
           </div>

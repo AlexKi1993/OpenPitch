@@ -14,7 +14,11 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/dashboard";
+  const rawRedirect = searchParams.get("redirect") || "/dashboard";
+  const redirect =
+    rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
+      ? rawRedirect
+      : "/dashboard";
   const supabase = createClient();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -31,7 +35,7 @@ function LoginForm() {
       setError(
         error.message === "Invalid login credentials"
           ? "Email oder Passwort falsch."
-          : error.message
+          : "Anmeldung fehlgeschlagen. Bitte versuche es erneut."
       );
       setLoading(false);
       return;

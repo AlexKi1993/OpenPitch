@@ -60,6 +60,38 @@ export default function NewIdeaPage() {
       return;
     }
 
+    // Server-side validation
+    if (title.trim().length < 3 || title.length > 200) {
+      setError("Der Titel muss zwischen 3 und 200 Zeichen lang sein.");
+      setLoading(false);
+      return;
+    }
+    if (summary.trim().length < 10 || summary.length > 500) {
+      setError("Die Kurzbeschreibung muss zwischen 10 und 500 Zeichen lang sein.");
+      setLoading(false);
+      return;
+    }
+    if (description.trim().length < 20 || description.length > 10000) {
+      setError("Die Beschreibung muss zwischen 20 und 10.000 Zeichen lang sein.");
+      setLoading(false);
+      return;
+    }
+    if (problem.trim().length < 10 || problem.length > 5000) {
+      setError("Das Problem muss zwischen 10 und 5.000 Zeichen lang sein.");
+      setLoading(false);
+      return;
+    }
+    if (solution.trim().length < 10 || solution.length > 5000) {
+      setError("Die Lösung muss zwischen 10 und 5.000 Zeichen lang sein.");
+      setLoading(false);
+      return;
+    }
+    if (targetAudience.trim().length < 5 || targetAudience.length > 2000) {
+      setError("Die Zielgruppe muss zwischen 5 und 2.000 Zeichen lang sein.");
+      setLoading(false);
+      return;
+    }
+
     const slug = slugify(title) + "-" + Date.now().toString(36);
 
     const { data: idea, error: ideaError } = await supabase
@@ -83,7 +115,7 @@ export default function NewIdeaPage() {
       .single();
 
     if (ideaError) {
-      setError(ideaError.message);
+      setError("Beim Erstellen der Idee ist ein Fehler aufgetreten. Bitte versuche es erneut.");
       setLoading(false);
       return;
     }

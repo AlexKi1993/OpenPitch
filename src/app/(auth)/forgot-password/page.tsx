@@ -22,7 +22,7 @@ export default function ForgotPasswordPage() {
     });
 
     if (error) {
-      setError(error.message);
+      setError("Anfrage fehlgeschlagen. Bitte versuche es erneut.");
       setLoading(false);
       return;
     }

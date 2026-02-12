@@ -19,11 +19,15 @@ export default function ProfileEditor({ profile }: { profile: Profile }) {
   const supabase = createClient();
 
   async function handleSave() {
+    if (fullName.length > 100 || bio.length > 1000 || website.length > 200 || skillsText.length > 500) {
+      return;
+    }
     setLoading(true);
     const skills = skillsText
       .split(",")
       .map((s) => s.trim())
-      .filter(Boolean);
+      .filter(Boolean)
+      .slice(0, 20);
 
     await supabase
       .from("profiles")
@@ -63,6 +67,7 @@ export default function ProfileEditor({ profile }: { profile: Profile }) {
           type="text"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
+          maxLength={100}
           className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
         />
       </div>
@@ -73,6 +78,7 @@ export default function ProfileEditor({ profile }: { profile: Profile }) {
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           rows={3}
+          maxLength={1000}
           className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none resize-none"
         />
       </div>
@@ -84,6 +90,7 @@ export default function ProfileEditor({ profile }: { profile: Profile }) {
           value={website}
           onChange={(e) => setWebsite(e.target.value)}
           placeholder="https://..."
+          maxLength={200}
           className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
         />
       </div>
@@ -97,6 +104,7 @@ export default function ProfileEditor({ profile }: { profile: Profile }) {
           value={skillsText}
           onChange={(e) => setSkillsText(e.target.value)}
           placeholder="React, Python, Marketing, Design..."
+          maxLength={500}
           className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
         />
       </div>

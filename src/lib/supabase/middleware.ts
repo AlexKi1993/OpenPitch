@@ -1,7 +1,61 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+// Simple in-memory rate limiter (per-instance, resets on cold start)
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(
+  key: string,
+  maxRequests: number,
+  windowMs: number
+): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(key);
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(key, { count: 1, resetAt: now + windowMs });
+    return false;
+  }
+
+  entry.count++;
+  return entry.count > maxRequests;
+}
+
+// Clean up old entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitMap) {
+    if (now > entry.resetAt) rateLimitMap.delete(key);
+  }
+}, 60000);
+
 export async function updateSession(request: NextRequest) {
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    request.headers.get("x-real-ip") ||
+    "unknown";
+  const pathname = request.nextUrl.pathname;
+
+  // Rate limit auth endpoints: 10 requests per minute per IP
+  const authRatePaths = ["/login", "/register", "/forgot-password"];
+  const isAuthPath = authRatePaths.some((p) => pathname.startsWith(p));
+
+  if (isAuthPath && isRateLimited(`auth:${ip}`, 10, 60000)) {
+    return new NextResponse("Zu viele Anfragen. Bitte warte kurz.", {
+      status: 429,
+    });
+  }
+
+  // Rate limit API-heavy pages: 30 requests per minute per IP
+  if (
+    pathname.startsWith("/ideas/new") &&
+    isRateLimited(`write:${ip}`, 30, 60000)
+  ) {
+    return new NextResponse("Zu viele Anfragen. Bitte warte kurz.", {
+      status: 429,
+    });
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -34,7 +88,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Protected routes - redirect to login if not authenticated
-  const protectedPaths = ["/dashboard", "/ideas/new"];
+  const protectedPaths = ["/dashboard", "/ideas/new", "/profile"];
   const isProtected = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );

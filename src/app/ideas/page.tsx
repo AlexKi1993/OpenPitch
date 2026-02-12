@@ -21,11 +21,14 @@ export default async function IdeasPage({ searchParams }: Props) {
     .from("ideas")
     .select("*, author:profiles(*), tags:idea_tags(tag:tags(*))");
 
-  // Search
+  // Search (sanitize to prevent PostgREST filter injection)
   if (params.q) {
-    query = query.or(
-      `title.ilike.%${params.q}%,summary.ilike.%${params.q}%,description.ilike.%${params.q}%`
-    );
+    const sanitizedQ = params.q.replace(/[,.()"'\\%_]/g, "");
+    if (sanitizedQ.trim()) {
+      query = query.or(
+        `title.ilike.%${sanitizedQ}%,summary.ilike.%${sanitizedQ}%,description.ilike.%${sanitizedQ}%`
+      );
+    }
   }
 
   // Category filter

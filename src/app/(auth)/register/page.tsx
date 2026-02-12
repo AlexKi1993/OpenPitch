@@ -39,7 +39,7 @@ export default function RegisterPage() {
     });
 
     if (error) {
-      setError(error.message);
+      setError("Registrierung fehlgeschlagen. Bitte versuche es erneut.");
       setLoading(false);
       return;
     }
