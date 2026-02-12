@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import IdeaCard from "@/components/IdeaCard";
+import StoryCard from "@/components/StoryCard";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -27,6 +28,12 @@ export default async function Home() {
   const { count: userCount } = await supabase
     .from("profiles")
     .select("*", { count: "exact", head: true });
+
+  const { data: stories } = await supabase
+    .from("stories")
+    .select("*, author:profiles(*)")
+    .order("created_at", { ascending: false })
+    .limit(4);
 
   return (
     <div>
@@ -154,6 +161,27 @@ export default async function Home() {
                 <IdeaCard key={idea.id} idea={idea} />
               ))}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* Latest Stories */}
+      {stories && stories.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold">Neueste Stories</h2>
+            <Link
+              href="/stories"
+              className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+            >
+              Alle anzeigen
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {stories.map((story) => (
+              <StoryCard key={story.id} story={story} />
+            ))}
           </div>
         </section>
       )}

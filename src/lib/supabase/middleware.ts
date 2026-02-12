@@ -48,7 +48,7 @@ export async function updateSession(request: NextRequest) {
 
   // Rate limit API-heavy pages: 30 requests per minute per IP
   if (
-    pathname.startsWith("/ideas/new") &&
+    (pathname.startsWith("/ideas/new") || pathname.startsWith("/stories/new")) &&
     isRateLimited(`write:${ip}`, 30, 60000)
   ) {
     return new NextResponse("Zu viele Anfragen. Bitte warte kurz.", {
@@ -88,7 +88,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Protected routes - redirect to login if not authenticated
-  const protectedPaths = ["/dashboard", "/ideas/new", "/profile"];
+  const protectedPaths = ["/dashboard", "/ideas/new", "/stories/new", "/profile"];
   const isProtected = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );

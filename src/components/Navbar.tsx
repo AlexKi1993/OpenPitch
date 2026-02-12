@@ -53,6 +53,12 @@ export default function Navbar() {
             >
               Ideen entdecken
             </Link>
+            <Link
+              href="/stories"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Storyboard
+            </Link>
             {user && (
               <Link
                 href="/ideas/new"
@@ -131,6 +137,13 @@ export default function Navbar() {
               className="block px-3 py-2 text-muted-foreground hover:text-foreground"
             >
               Ideen entdecken
+            </Link>
+            <Link
+              href="/stories"
+              onClick={() => setMenuOpen(false)}
+              className="block px-3 py-2 text-muted-foreground hover:text-foreground"
+            >
+              Storyboard
             </Link>
             {user ? (
               <>

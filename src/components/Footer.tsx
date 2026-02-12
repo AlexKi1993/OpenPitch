@@ -33,6 +33,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/stories" className="hover:text-foreground transition-colors">
+                  Storyboard
+                </Link>
+              </li>
+              <li>
                 <Link href="/ueber-uns" className="hover:text-foreground transition-colors">
                   Über uns
                 </Link>

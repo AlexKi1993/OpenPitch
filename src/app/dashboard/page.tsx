@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { timeAgo } from "@/lib/utils";
 import { STATUS_LABELS, STATUS_COLORS } from "@/types/database";
+import { STORY_TYPES } from "@/types/database";
 import {
   Lightbulb,
   Plus,
@@ -10,6 +11,7 @@ import {
   MessageCircle,
   Users,
   Settings,
+  BookOpen,
 } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -42,6 +44,13 @@ export default async function DashboardPage() {
     )
     .eq("idea.author_id", user.id)
     .eq("status", "pending")
+    .order("created_at", { ascending: false });
+
+  // Fetch user's stories
+  const { data: myStories } = await supabase
+    .from("stories")
+    .select("*")
+    .eq("author_id", user.id)
     .order("created_at", { ascending: false });
 
   const totalVotes =
@@ -149,6 +158,62 @@ export default async function DashboardPage() {
                 className="mt-3 inline-block text-sm text-primary font-medium hover:underline"
               >
                 Erste Idee erstellen
+              </Link>
+            </div>
+          )}
+        </section>
+
+        {/* My Stories */}
+        <section>
+          <h2 className="text-xl font-semibold mb-4">Meine Stories</h2>
+          {myStories && myStories.length > 0 ? (
+            <div className="space-y-3">
+              {myStories.map((story) => {
+                const typeInfo = STORY_TYPES[story.story_type as keyof typeof STORY_TYPES];
+                return (
+                  <Link
+                    key={story.id}
+                    href={`/stories/${story.id}`}
+                    className="block rounded-lg border border-border p-4 hover:border-primary/50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="font-medium truncate">{story.title}</h3>
+                        <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-xs font-medium ${typeInfo.color}`}
+                          >
+                            {typeInfo.label}
+                          </span>
+                          <span>{timeAgo(story.created_at)}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground shrink-0">
+                        <span className="flex items-center gap-1">
+                          <ArrowUp className="h-3.5 w-3.5" />
+                          {story.vote_count}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MessageCircle className="h-3.5 w-3.5" />
+                          {story.comment_count}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed border-border p-8 text-center">
+              <BookOpen className="mx-auto h-8 w-8 text-muted-foreground/50 mb-3" />
+              <p className="text-sm text-muted-foreground">
+                Du hast noch keine Stories geteilt.
+              </p>
+              <Link
+                href="/stories/new"
+                className="mt-3 inline-block text-sm text-primary font-medium hover:underline"
+              >
+                Erste Story teilen
               </Link>
             </div>
           )}

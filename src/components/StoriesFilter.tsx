@@ -1,0 +1,106 @@
+"use client";
+
+import { useRouter, useSearchParams } from "next/navigation";
+import { Search, SlidersHorizontal } from "lucide-react";
+import { useState } from "react";
+
+interface StoriesFilterProps {
+  currentQuery: string;
+  currentType: string;
+  currentSort: string;
+}
+
+export default function StoriesFilter({
+  currentQuery,
+  currentType,
+  currentSort,
+}: StoriesFilterProps) {
+  const [query, setQuery] = useState(currentQuery);
+  const [showFilters, setShowFilters] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  function updateParams(key: string, value: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value && value !== "all" && value !== "newest") {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+    router.push(`/stories?${params.toString()}`);
+  }
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    updateParams("q", query);
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Search bar */}
+      <form onSubmit={handleSearch} className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Stories durchsuchen..."
+            className="w-full rounded-lg border border-border bg-background pl-10 pr-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+        </div>
+        <button
+          type="submit"
+          className="rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-dark transition-colors"
+        >
+          Suchen
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowFilters(!showFilters)}
+          className={`rounded-lg border px-3 py-2.5 transition-colors ${
+            showFilters
+              ? "border-primary bg-primary/10 text-primary"
+              : "border-border hover:bg-muted"
+          }`}
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+        </button>
+      </form>
+
+      {/* Filters */}
+      {showFilters && (
+        <div className="flex flex-wrap gap-4 rounded-lg border border-border bg-card p-4">
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">
+              Typ
+            </label>
+            <select
+              value={currentType}
+              onChange={(e) => updateParams("type", e.target.value)}
+              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
+            >
+              <option value="all">Alle</option>
+              <option value="success">Erfolgsgeschichten</option>
+              <option value="fuckup">FuckUps</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">
+              Sortierung
+            </label>
+            <select
+              value={currentSort}
+              onChange={(e) => updateParams("sort", e.target.value)}
+              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
+            >
+              <option value="newest">Neueste zuerst</option>
+              <option value="most_votes">Meiste Votes</option>
+            </select>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

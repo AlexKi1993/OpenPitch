@@ -107,3 +107,46 @@ export const STATUS_COLORS: Record<Idea["status"], string> = {
   implemented: "bg-purple-100 text-purple-800",
   archived: "bg-gray-100 text-gray-800",
 };
+
+export interface Story {
+  id: string;
+  author_id: string;
+  title: string;
+  slug: string;
+  story_type: "success" | "fuckup";
+  idea_summary: string;
+  what_went_well: string;
+  what_went_wrong: string;
+  lessons_learned: string;
+  advice: string;
+  vote_count: number;
+  comment_count: number;
+  created_at: string;
+  updated_at: string;
+  // Joined fields
+  author?: Profile;
+  user_voted?: boolean;
+}
+
+export interface StoryVote {
+  id: string;
+  story_id: string;
+  user_id: string;
+  created_at: string;
+}
+
+export interface StoryComment {
+  id: string;
+  story_id: string;
+  author_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  // Joined
+  author?: Profile;
+}
+
+export const STORY_TYPES = {
+  success: { label: "Erfolgsgeschichte", color: "bg-green-100 text-green-800" },
+  fuckup: { label: "FuckUp", color: "bg-red-100 text-red-800" },
+} as const;
