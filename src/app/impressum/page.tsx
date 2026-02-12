@@ -20,6 +20,8 @@ export default function ImpressumPage() {
         <section>
           <h2 className="text-lg font-semibold text-foreground">Kontakt</h2>
           <p>
+            Telefon: +49 178 333 8650
+            <br />
             E-Mail: info@openpitch.eu
           </p>
         </section>
