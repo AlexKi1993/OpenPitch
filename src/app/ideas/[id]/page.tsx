@@ -18,6 +18,7 @@ import {
   HandCoins,
   Handshake,
   CircleOff,
+  Pencil,
 } from "lucide-react";
 
 interface Props {
@@ -125,7 +126,18 @@ export default async function IdeaDetailPage({ params }: Props) {
             </span>
           </div>
 
-          <h1 className="text-3xl font-bold">{idea.title}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold">{idea.title}</h1>
+            {isAuthor && (
+              <Link
+                href={`/ideas/${id}/edit`}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Bearbeiten
+              </Link>
+            )}
+          </div>
 
           <div className="mt-3 flex items-center gap-3 text-sm text-muted-foreground">
             <Link
