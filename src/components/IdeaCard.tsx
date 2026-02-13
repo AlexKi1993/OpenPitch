@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUp, MessageCircle, Users } from "lucide-react";
+import { ArrowUp, MessageCircle, ImageIcon } from "lucide-react";
 import { timeAgo, getInitials } from "@/lib/utils";
 import type { Idea } from "@/types/database";
 import { STATUS_LABELS, STATUS_COLORS } from "@/types/database";
@@ -9,6 +9,11 @@ interface IdeaCardProps {
 }
 
 export default function IdeaCard({ idea }: IdeaCardProps) {
+  const firstImage = idea.images?.sort((a, b) => a.position - b.position)[0];
+  const thumbnailUrl = firstImage
+    ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/idea-images/${firstImage.storage_path}`
+    : null;
+
   return (
     <Link
       href={`/ideas/${idea.id}`}
@@ -72,8 +77,25 @@ export default function IdeaCard({ idea }: IdeaCardProps) {
               <MessageCircle className="h-3.5 w-3.5" />
               {idea.comment_count}
             </div>
+            {idea.images && idea.images.length > 0 && (
+              <div className="flex items-center gap-1">
+                <ImageIcon className="h-3.5 w-3.5" />
+                {idea.images.length}
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Thumbnail */}
+        {thumbnailUrl && (
+          <div className="hidden sm:block shrink-0">
+            <img
+              src={thumbnailUrl}
+              alt=""
+              className="h-20 w-20 rounded-lg object-cover border border-border"
+            />
+          </div>
+        )}
       </div>
     </Link>
   );

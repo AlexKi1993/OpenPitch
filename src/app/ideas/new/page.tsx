@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { slugify } from "@/lib/utils";
 import { CATEGORIES } from "@/types/database";
 import type { Tag } from "@/types/database";
-import { Lightbulb, ArrowLeft } from "lucide-react";
+import { Lightbulb, ArrowLeft, ImagePlus, X } from "lucide-react";
 import Link from "next/link";
 
 export default function NewIdeaPage() {
@@ -23,6 +23,8 @@ export default function NewIdeaPage() {
   const [notSelfReason, setNotSelfReason] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [allTags, setAllTags] = useState<Tag[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -44,6 +46,46 @@ export default function NewIdeaPage() {
         ? prev.filter((id) => id !== tagId)
         : [...prev, tagId]
     );
+  }
+
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || []);
+    const remaining = 3 - imageFiles.length;
+    const toAdd = files.slice(0, remaining);
+
+    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+    const maxSize = 2 * 1024 * 1024; // 2MB
+
+    for (const file of toAdd) {
+      if (!validTypes.includes(file.type)) {
+        setError("Nur JPG, PNG und WebP Bilder sind erlaubt.");
+        return;
+      }
+      if (file.size > maxSize) {
+        setError("Bilder dürfen maximal 2MB groß sein.");
+        return;
+      }
+    }
+
+    setError("");
+    const newFiles = [...imageFiles, ...toAdd];
+    setImageFiles(newFiles);
+
+    // Generate previews
+    const newPreviews = [...imagePreviews];
+    toAdd.forEach((file) => {
+      newPreviews.push(URL.createObjectURL(file));
+    });
+    setImagePreviews(newPreviews);
+
+    // Reset input
+    e.target.value = "";
+  }
+
+  function removeImage(index: number) {
+    URL.revokeObjectURL(imagePreviews[index]);
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -128,6 +170,27 @@ export default function NewIdeaPage() {
           tag_id: tagId,
         }))
       );
+    }
+
+    // Upload images
+    if (imageFiles.length > 0) {
+      for (let i = 0; i < imageFiles.length; i++) {
+        const file = imageFiles[i];
+        const ext = file.name.split(".").pop();
+        const storagePath = `${user.id}/${idea.id}/${i}.${ext}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("idea-images")
+          .upload(storagePath, file);
+
+        if (!uploadError) {
+          await supabase.from("idea_images").insert({
+            idea_id: idea.id,
+            storage_path: storagePath,
+            position: i,
+          });
+        }
+      }
     }
 
     router.push(`/ideas/${idea.id}`);
@@ -347,6 +410,43 @@ export default function NewIdeaPage() {
               />
             </div>
           )}
+        </div>
+
+        {/* Images */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Bilder <span className="text-xs text-muted-foreground font-normal">(max. 3, je max. 2MB)</span>
+          </label>
+          <div className="flex flex-wrap gap-3 mb-3">
+            {imagePreviews.map((src, i) => (
+              <div key={i} className="relative group">
+                <img
+                  src={src}
+                  alt={`Vorschau ${i + 1}`}
+                  className="h-24 w-24 rounded-lg object-cover border border-border"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(i)}
+                  className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+            {imageFiles.length < 3 && (
+              <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-colors">
+                <ImagePlus className="h-6 w-6 text-muted-foreground" />
+                <span className="mt-1 text-xs text-muted-foreground">Bild</span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
         </div>
 
         {/* Tags */}

@@ -6,6 +6,7 @@ import { STATUS_LABELS, STATUS_COLORS } from "@/types/database";
 import VoteButton from "@/components/VoteButton";
 import CommentSection from "@/components/CommentSection";
 import CollaborateButton from "@/components/CollaborateButton";
+import ImageGallery from "@/components/ImageGallery";
 import {
   ArrowLeft,
   Calendar,
@@ -45,6 +46,19 @@ export default async function IdeaDetailPage({ params }: Props) {
   // Flatten tags
   const tags =
     idea.tags?.map((t: { tag: unknown }) => t.tag).filter(Boolean) || [];
+
+  // Fetch idea images
+  const { data: ideaImages } = await supabase
+    .from("idea_images")
+    .select("*")
+    .eq("idea_id", id)
+    .order("position");
+
+  const images = (ideaImages || []).map((img) => ({
+    url: supabase.storage.from("idea-images").getPublicUrl(img.storage_path)
+      .data.publicUrl,
+    position: img.position,
+  }));
 
   // Fetch comments
   const { data: comments } = await supabase
@@ -146,6 +160,9 @@ export default async function IdeaDetailPage({ params }: Props) {
               ))}
             </div>
           )}
+
+          {/* Images */}
+          {images.length > 0 && <ImageGallery images={images} />}
 
           {/* Summary */}
           <div className="mt-6 rounded-xl bg-muted/50 border border-border p-5">

@@ -20,7 +20,7 @@ export default async function IdeasPage({ searchParams }: Props) {
 
   let query = supabase
     .from("ideas")
-    .select("*, author:profiles(*), tags:idea_tags(tag:tags(*))");
+    .select("*, author:profiles(*), tags:idea_tags(tag:tags(*)), images:idea_images(*)");
 
   // Search (sanitize to prevent PostgREST filter injection)
   if (params.q) {

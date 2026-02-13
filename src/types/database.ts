@@ -32,7 +32,16 @@ export interface Idea {
   // Joined fields
   author?: Profile;
   tags?: Tag[];
+  images?: IdeaImage[];
   user_voted?: boolean;
+}
+
+export interface IdeaImage {
+  id: string;
+  idea_id: string;
+  storage_path: string;
+  position: number;
+  created_at: string;
 }
 
 export interface Comment {

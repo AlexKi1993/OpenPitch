@@ -35,7 +35,7 @@ export default async function ProfilePage({ params }: Props) {
 
   const { data: ideas } = await supabase
     .from("ideas")
-    .select("*, author:profiles(*)")
+    .select("*, author:profiles(*), images:idea_images(*)")
     .eq("author_id", id)
     .order("created_at", { ascending: false });
 
