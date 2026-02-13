@@ -1,11 +1,17 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Lightbulb, Heart, Flame } from "lucide-react";
 
 export default function Footer() {
+  const pathname = usePathname();
+  const isManifestPage = pathname === "/manifest";
+
   return (
     <footer className="border-t border-border bg-muted/50">
-      {/* Manifest Teaser */}
-      <div className="border-b border-border">
+      {/* Manifest Teaser — nicht auf der Manifest-Seite selbst */}
+      {!isManifestPage && <div className="border-b border-border">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
             <Flame className="h-8 w-8 text-primary mb-3" />
@@ -26,7 +32,7 @@ export default function Footer() {
             </Link>
           </div>
         </div>
-      </div>
+      </div>}
 
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
