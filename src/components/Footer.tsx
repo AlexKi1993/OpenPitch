@@ -6,12 +6,12 @@ import { Lightbulb, Heart, Flame } from "lucide-react";
 
 export default function Footer() {
   const pathname = usePathname();
-  const isManifestPage = pathname === "/manifest";
+  const showManifestTeaser = pathname === "/";
 
   return (
     <footer className="border-t border-border bg-muted/50">
       {/* Manifest Teaser — nicht auf der Manifest-Seite selbst */}
-      {!isManifestPage && <div className="border-b border-border">
+      {showManifestTeaser && <div className="border-b border-border">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
             <Flame className="h-8 w-8 text-primary mb-3" />
