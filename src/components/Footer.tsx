@@ -1,9 +1,33 @@
 import Link from "next/link";
-import { Lightbulb, Heart } from "lucide-react";
+import { Lightbulb, Heart, Flame } from "lucide-react";
 
 export default function Footer() {
   return (
     <footer className="border-t border-border bg-muted/50">
+      {/* Manifest Teaser */}
+      <div className="border-b border-border">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
+            <Flame className="h-8 w-8 text-primary mb-3" />
+            <blockquote className="text-lg sm:text-xl font-semibold leading-snug">
+              &ldquo;Bauen ist wichtiger als Planen. Kollaboration ist wichtiger
+              als Konkurrenz. Machen ist wichtiger als Reden.&rdquo;
+            </blockquote>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Wir glauben, dass gute Ideen der Welt gehören &ndash; nicht der
+              Bürokratie.
+            </p>
+            <Link
+              href="/manifest"
+              className="mt-4 inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-5 py-2 text-sm font-medium text-primary hover:bg-primary/10 transition-colors"
+            >
+              <Flame className="h-4 w-4" />
+              Unser Manifest lesen
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           {/* Brand */}
@@ -38,8 +62,18 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/lessons" className="hover:text-foreground transition-colors">
+                  Lessons
+                </Link>
+              </li>
+              <li>
                 <Link href="/ueber-uns" className="hover:text-foreground transition-colors">
                   Über uns
+                </Link>
+              </li>
+              <li>
+                <Link href="/manifest" className="hover:text-foreground transition-colors">
+                  Manifest
                 </Link>
               </li>
               <li>
