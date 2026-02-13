@@ -19,6 +19,7 @@
 }
 
 :root {
+  color-scheme: light;
   --background: #ffffff;
   --foreground: #0f172a;
   --muted: #f1f5f9;
@@ -29,6 +30,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: #0f172a;
   --foreground: #f1f5f9;
   --muted: #1e293b;
