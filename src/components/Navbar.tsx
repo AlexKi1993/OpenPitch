@@ -66,6 +66,12 @@ export default function Navbar() {
             >
               Storyboard
             </Link>
+            <Link
+              href="/lessons"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Lessons
+            </Link>
             {user && (
               <Link
                 href="/ideas/new"
@@ -164,6 +170,13 @@ export default function Navbar() {
               className="block px-3 py-2 text-muted-foreground hover:text-foreground"
             >
               Storyboard
+            </Link>
+            <Link
+              href="/lessons"
+              onClick={() => setMenuOpen(false)}
+              className="block px-3 py-2 text-muted-foreground hover:text-foreground"
+            >
+              Lessons
             </Link>
             {user ? (
               <>

@@ -159,3 +159,50 @@ export const STORY_TYPES = {
   success: { label: "Erfolgsgeschichte", color: "bg-green-100 text-green-800" },
   fuckup: { label: "FuckUp", color: "bg-red-100 text-red-800" },
 } as const;
+
+export interface Lesson {
+  id: string;
+  author_id: string;
+  title: string;
+  slug: string;
+  category: string;
+  situation: string;
+  learning: string;
+  advice: string;
+  vote_count: number;
+  comment_count: number;
+  created_at: string;
+  updated_at: string;
+  // Joined fields
+  author?: Profile;
+  user_voted?: boolean;
+}
+
+export interface LessonVote {
+  id: string;
+  lesson_id: string;
+  user_id: string;
+  created_at: string;
+}
+
+export interface LessonComment {
+  id: string;
+  lesson_id: string;
+  author_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  // Joined
+  author?: Profile;
+}
+
+export const LESSON_CATEGORIES = [
+  "Marketing",
+  "Team & Kultur",
+  "Finanzen",
+  "Produkt",
+  "Fundraising",
+  "Technik",
+  "Vertrieb",
+  "Sonstiges",
+] as const;

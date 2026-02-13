@@ -12,6 +12,7 @@ import {
   Users,
   Settings,
   BookOpen,
+  GraduationCap,
 } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -53,6 +54,13 @@ export default async function DashboardPage() {
     .eq("author_id", user.id)
     .order("created_at", { ascending: false });
 
+  // Fetch user's lessons
+  const { data: myLessons } = await supabase
+    .from("lessons")
+    .select("*")
+    .eq("author_id", user.id)
+    .order("created_at", { ascending: false });
+
   const totalVotes =
     myIdeas?.reduce((sum, idea) => sum + idea.vote_count, 0) || 0;
   const totalComments =
@@ -88,6 +96,13 @@ export default async function DashboardPage() {
           >
             <Plus className="h-4 w-4" />
             Neue Story
+          </Link>
+          <Link
+            href="/lessons/new"
+            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Neue Lesson
           </Link>
         </div>
       </div>
@@ -221,6 +236,57 @@ export default async function DashboardPage() {
                 className="mt-3 inline-block text-sm text-primary font-medium hover:underline"
               >
                 Erste Story teilen
+              </Link>
+            </div>
+          )}
+        </section>
+
+        {/* My Lessons */}
+        <section>
+          <h2 className="text-xl font-semibold mb-4">Meine Lessons</h2>
+          {myLessons && myLessons.length > 0 ? (
+            <div className="space-y-3">
+              {myLessons.map((lesson) => (
+                <Link
+                  key={lesson.id}
+                  href={`/lessons/${lesson.id}`}
+                  className="block rounded-lg border border-border p-4 hover:border-primary/50 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h3 className="font-medium truncate">{lesson.title}</h3>
+                      <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                        <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800">
+                          {lesson.category}
+                        </span>
+                        <span>{timeAgo(lesson.created_at)}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground shrink-0">
+                      <span className="flex items-center gap-1">
+                        <ArrowUp className="h-3.5 w-3.5" />
+                        {lesson.vote_count}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        {lesson.comment_count}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed border-border p-8 text-center">
+              <GraduationCap className="mx-auto h-8 w-8 text-muted-foreground/50 mb-3" />
+              <p className="text-sm text-muted-foreground">
+                Du hast noch keine Lessons geteilt.
+              </p>
+              <Link
+                href="/lessons/new"
+                className="mt-3 inline-block text-sm text-primary font-medium hover:underline"
+              >
+                Erste Lesson teilen
               </Link>
             </div>
           )}
