@@ -38,8 +38,8 @@ export default function StoriesFilter({
   return (
     <div className="space-y-4">
       {/* Search bar */}
-      <form onSubmit={handleSearch} className="flex gap-2">
-        <div className="relative flex-1">
+      <form onSubmit={handleSearch} className="flex flex-wrap gap-2">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
@@ -51,14 +51,14 @@ export default function StoriesFilter({
         </div>
         <button
           type="submit"
-          className="rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-dark transition-colors"
+          className="rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-dark transition-colors shrink-0"
         >
           Suchen
         </button>
         <button
           type="button"
           onClick={() => setShowFilters(!showFilters)}
-          className={`rounded-lg border px-3 py-2.5 transition-colors ${
+          className={`rounded-lg border px-3 py-2.5 transition-colors shrink-0 ${
             showFilters
               ? "border-primary bg-primary/10 text-primary"
               : "border-border hover:bg-muted"

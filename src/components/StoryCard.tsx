@@ -14,7 +14,7 @@ export default function StoryCard({ story }: StoryCardProps) {
   return (
     <Link
       href={`/stories/${story.id}`}
-      className="group block rounded-xl border border-border bg-card p-6 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
+      className="group block overflow-hidden rounded-xl border border-border bg-card p-4 sm:p-6 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
     >
       <div className="flex gap-4">
         {/* Vote count */}
@@ -41,15 +41,15 @@ export default function StoryCard({ story }: StoryCardProps) {
           </p>
 
           {/* Meta */}
-          <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-medium">
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1 min-w-0">
+              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-medium">
                 {getInitials(story.author?.full_name || null)}
               </div>
-              <span>{story.author?.full_name || "Anonym"}</span>
+              <span className="truncate">{story.author?.full_name || "Anonym"}</span>
             </div>
-            <span>{timeAgo(story.created_at)}</span>
-            <div className="flex items-center gap-1">
+            <span className="shrink-0">{timeAgo(story.created_at)}</span>
+            <div className="flex items-center gap-1 shrink-0">
               <MessageCircle className="h-3.5 w-3.5" />
               {story.comment_count}
             </div>
