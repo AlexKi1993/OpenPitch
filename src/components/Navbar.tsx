@@ -4,15 +4,22 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Lightbulb, Menu, X, LogOut, User, LayoutDashboard } from "lucide-react";
+import { Lightbulb, Menu, X, LogOut, User, LayoutDashboard, Sun, Moon } from "lucide-react";
+import { useTheme } from "next-themes";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 export default function Navbar() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+  const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -66,6 +73,19 @@ export default function Navbar() {
               >
                 Idee pitchen
               </Link>
+            )}
+            {mounted && (
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                aria-label="Theme wechseln"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+              </button>
             )}
             {user ? (
               <div className="relative">
@@ -179,6 +199,24 @@ export default function Navbar() {
               >
                 Anmelden
               </Link>
+            )}
+            {mounted && (
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="flex items-center gap-2 px-3 py-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {theme === "dark" ? (
+                  <>
+                    <Sun className="h-4 w-4" />
+                    Light Mode
+                  </>
+                ) : (
+                  <>
+                    <Moon className="h-4 w-4" />
+                    Dark Mode
+                  </>
+                )}
+              </button>
             )}
           </div>
         )}
