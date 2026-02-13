@@ -17,7 +17,7 @@ export default function IdeaCard({ idea }: IdeaCardProps) {
   return (
     <Link
       href={`/ideas/${idea.id}`}
-      className="group block rounded-xl border border-border bg-card p-6 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
+      className="group block overflow-hidden rounded-xl border border-border bg-card p-4 sm:p-6 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
     >
       <div className="flex gap-4">
         {/* Vote count */}
@@ -65,20 +65,20 @@ export default function IdeaCard({ idea }: IdeaCardProps) {
           )}
 
           {/* Meta */}
-          <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-medium">
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1 min-w-0">
+              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-medium">
                 {getInitials(idea.author?.full_name || null)}
               </div>
-              <span>{idea.author?.full_name || "Anonym"}</span>
+              <span className="truncate">{idea.author?.full_name || "Anonym"}</span>
             </div>
-            <span>{timeAgo(idea.created_at)}</span>
-            <div className="flex items-center gap-1">
+            <span className="shrink-0">{timeAgo(idea.created_at)}</span>
+            <div className="flex items-center gap-1 shrink-0">
               <MessageCircle className="h-3.5 w-3.5" />
               {idea.comment_count}
             </div>
             {idea.images && idea.images.length > 0 && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 shrink-0">
                 <ImageIcon className="h-3.5 w-3.5" />
                 {idea.images.length}
               </div>
