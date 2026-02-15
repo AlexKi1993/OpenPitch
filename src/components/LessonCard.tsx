@@ -37,12 +37,16 @@ export default function LessonCard({ lesson }: LessonCardProps) {
 
           {/* Meta */}
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1 min-w-0">
+            <Link
+              href={`/profile/${lesson.author_id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1 min-w-0 hover:text-primary transition-colors"
+            >
               <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-medium">
                 {getInitials(lesson.author?.full_name || null)}
               </div>
               <span className="truncate">{lesson.author?.full_name || "Anonym"}</span>
-            </div>
+            </Link>
             <span className="shrink-0">{timeAgo(lesson.created_at)}</span>
             <div className="flex items-center gap-1 shrink-0">
               <MessageCircle className="h-3.5 w-3.5" />

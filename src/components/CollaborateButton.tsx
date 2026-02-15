@@ -104,6 +104,7 @@ export default function CollaborateButton({
                   <option value="designer">Designer</option>
                   <option value="marketing">Marketing</option>
                   <option value="business">Business / Strategy</option>
+                  <option value="investor">Investor</option>
                   <option value="other">Sonstiges</option>
                 </select>
               </div>

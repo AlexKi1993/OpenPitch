@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Send } from "lucide-react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { timeAgo, getInitials } from "@/lib/utils";
 import type { Comment } from "@/types/database";
@@ -94,12 +95,17 @@ export default function CommentSection({
               className="rounded-lg border border-border p-4"
             >
               <div className="flex items-center gap-2 mb-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-medium">
-                  {getInitials(comment.author?.full_name || null)}
-                </div>
-                <span className="text-sm font-medium">
-                  {comment.author?.full_name || "Anonym"}
-                </span>
+                <Link
+                  href={`/profile/${comment.author_id}`}
+                  className="flex items-center gap-2 hover:text-primary transition-colors"
+                >
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-medium">
+                    {getInitials(comment.author?.full_name || null)}
+                  </div>
+                  <span className="text-sm font-medium">
+                    {comment.author?.full_name || "Anonym"}
+                  </span>
+                </Link>
                 <span className="text-xs text-muted-foreground">
                   {timeAgo(comment.created_at)}
                 </span>
