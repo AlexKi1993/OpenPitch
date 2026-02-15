@@ -15,8 +15,13 @@ interface ExistingImage {
   url: string;
 }
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function EditIdeaPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id: slugOrId } = useParams<{ id: string }>();
+  const [ideaUuid, setIdeaUuid] = useState("");
+  const [ideaSlug, setIdeaSlug] = useState("");
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [description, setDescription] = useState("");
@@ -47,25 +52,41 @@ export default function EditIdeaPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        router.push(`/login?redirect=/ideas/${id}/edit`);
+        router.push(`/login?redirect=/ideas/${slugOrId}/edit`);
         return;
       }
 
-      // Load idea
-      const { data: idea, error: ideaError } = await supabase
+      // Try slug first, then UUID fallback
+      let idea = null;
+      const { data: bySlug } = await supabase
         .from("ideas")
         .select("*, tags:idea_tags(tag_id)")
-        .eq("id", id)
+        .eq("slug", slugOrId)
         .single();
 
-      if (ideaError || !idea) {
+      if (bySlug) {
+        idea = bySlug;
+      } else if (UUID_RE.test(slugOrId)) {
+        const { data: byId } = await supabase
+          .from("ideas")
+          .select("*, tags:idea_tags(tag_id)")
+          .eq("id", slugOrId)
+          .single();
+        idea = byId;
+      }
+
+      if (!idea) {
         router.push("/ideas");
         return;
       }
 
+      // Store UUID and slug for later use
+      setIdeaUuid(idea.id);
+      setIdeaSlug(idea.slug);
+
       // Check author
       if (idea.author_id !== user.id) {
-        router.push(`/ideas/${id}`);
+        router.push(`/ideas/${idea.slug}`);
         return;
       }
 
@@ -89,7 +110,7 @@ export default function EditIdeaPage() {
       const { data: ideaImages } = await supabase
         .from("idea_images")
         .select("*")
-        .eq("idea_id", id)
+        .eq("idea_id", idea.id)
         .order("position");
 
       if (ideaImages) {
@@ -116,7 +137,7 @@ export default function EditIdeaPage() {
     }
 
     loadData();
-  }, [id]);
+  }, [slugOrId]);
 
   function toggleTag(tagId: string) {
     setSelectedTags((prev) =>
@@ -181,7 +202,7 @@ export default function EditIdeaPage() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      router.push(`/login?redirect=/ideas/${id}/edit`);
+      router.push(`/login?redirect=/ideas/${ideaSlug}/edit`);
       return;
     }
 
@@ -223,7 +244,7 @@ export default function EditIdeaPage() {
       return;
     }
 
-    // Update idea
+    // Update idea (using UUID for DB operations)
     const { error: updateError } = await supabase
       .from("ideas")
       .update({
@@ -239,7 +260,7 @@ export default function EditIdeaPage() {
         mvp_budget: mvpBudget,
         not_self_reason: notSelfReason,
       })
-      .eq("id", id);
+      .eq("id", ideaUuid);
 
     if (updateError) {
       setError(
@@ -250,11 +271,11 @@ export default function EditIdeaPage() {
     }
 
     // Update tags: delete old, insert new
-    await supabase.from("idea_tags").delete().eq("idea_id", id);
+    await supabase.from("idea_tags").delete().eq("idea_id", ideaUuid);
     if (selectedTags.length > 0) {
       await supabase.from("idea_tags").insert(
         selectedTags.map((tagId) => ({
-          idea_id: id,
+          idea_id: ideaUuid,
           tag_id: tagId,
         }))
       );
@@ -273,7 +294,7 @@ export default function EditIdeaPage() {
       for (let i = 0; i < newImageFiles.length; i++) {
         const file = newImageFiles[i];
         const ext = file.name.split(".").pop();
-        const storagePath = `${user.id}/${id}/${Date.now()}-${i}.${ext}`;
+        const storagePath = `${user.id}/${ideaUuid}/${Date.now()}-${i}.${ext}`;
 
         const { error: uploadError } = await supabase.storage
           .from("idea-images")
@@ -281,7 +302,7 @@ export default function EditIdeaPage() {
 
         if (!uploadError) {
           await supabase.from("idea_images").insert({
-            idea_id: id,
+            idea_id: ideaUuid,
             storage_path: storagePath,
             position: remainingExisting + i,
           });
@@ -289,7 +310,7 @@ export default function EditIdeaPage() {
       }
     }
 
-    router.push(`/ideas/${id}`);
+    router.push(`/ideas/${ideaSlug}`);
   }
 
   if (initialLoading) {
@@ -308,7 +329,7 @@ export default function EditIdeaPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <Link
-        href={`/ideas/${id}`}
+        href={`/ideas/${ideaSlug}`}
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -614,7 +635,7 @@ export default function EditIdeaPage() {
         {/* Submit */}
         <div className="flex gap-3 pt-4 border-t border-border">
           <Link
-            href={`/ideas/${id}`}
+            href={`/ideas/${ideaSlug}`}
             className="rounded-lg border border-border px-6 py-2.5 text-sm font-medium hover:bg-muted transition-colors"
           >
             Abbrechen

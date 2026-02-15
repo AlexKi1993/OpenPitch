@@ -16,7 +16,7 @@ export default function IdeaCard({ idea }: IdeaCardProps) {
 
   return (
     <Link
-      href={`/ideas/${idea.id}`}
+      href={`/ideas/${idea.slug}`}
       className="group block overflow-hidden rounded-xl border border-border bg-card p-4 sm:p-6 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
     >
       <div className="flex gap-4">

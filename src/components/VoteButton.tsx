@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 
 interface VoteButtonProps {
   ideaId: string;
+  slug?: string;
   voteCount: number;
   userVoted: boolean;
   userId?: string;
@@ -14,6 +15,7 @@ interface VoteButtonProps {
 
 export default function VoteButton({
   ideaId,
+  slug,
   voteCount,
   userVoted,
   userId,
@@ -26,7 +28,7 @@ export default function VoteButton({
 
   async function handleVote() {
     if (!userId) {
-      router.push("/login?redirect=/ideas/" + ideaId);
+      router.push("/login?redirect=/ideas/" + (slug || ideaId));
       return;
     }
 

@@ -7,12 +7,14 @@ import { createClient } from "@/lib/supabase/client";
 
 interface CollaborateButtonProps {
   ideaId: string;
+  slug?: string;
   userId?: string;
   hasApplied: boolean;
 }
 
 export default function CollaborateButton({
   ideaId,
+  slug,
   userId,
   hasApplied,
 }: CollaborateButtonProps) {
@@ -48,7 +50,7 @@ export default function CollaborateButton({
   if (!userId) {
     return (
       <a
-        href={`/login?redirect=/ideas/${ideaId}`}
+        href={`/login?redirect=/ideas/${slug || ideaId}`}
         className="flex items-center gap-2 rounded-lg border-2 border-primary bg-primary/10 px-6 py-3 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
       >
         <Users className="h-5 w-5" />

@@ -7,6 +7,7 @@ import VoteButton from "@/components/VoteButton";
 import CommentSection from "@/components/CommentSection";
 import CollaborateButton from "@/components/CollaborateButton";
 import ImageGallery from "@/components/ImageGallery";
+import type { Metadata } from "next";
 import {
   ArrowLeft,
   Calendar,
@@ -25,22 +26,69 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-export default async function IdeaDetailPage({ params }: Props) {
+// Helper: UUID v4 regex
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+async function fetchIdeaBySlugOrId(slugOrId: string) {
+  const supabase = await createClient();
+
+  // Try slug first
+  const { data: bySlug } = await supabase
+    .from("ideas")
+    .select("*, author:profiles(*), tags:idea_tags(tag:tags(*))")
+    .eq("slug", slugOrId)
+    .single();
+
+  if (bySlug) return bySlug;
+
+  // Fallback: try UUID (for old bookmarks)
+  if (UUID_RE.test(slugOrId)) {
+    const { data: byId } = await supabase
+      .from("ideas")
+      .select("*, author:profiles(*), tags:idea_tags(tag:tags(*))")
+      .eq("id", slugOrId)
+      .single();
+
+    return byId;
+  }
+
+  return null;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
+  const idea = await fetchIdeaBySlugOrId(id);
+
+  if (!idea) return { title: "Idee nicht gefunden" };
+
+  const description =
+    idea.summary.length > 160
+      ? idea.summary.slice(0, 157) + "..."
+      : idea.summary;
+
+  return {
+    title: idea.title,
+    description,
+    openGraph: {
+      title: idea.title,
+      description,
+      type: "article",
+    },
+  };
+}
+
+export default async function IdeaDetailPage({ params }: Props) {
+  const { id: slugOrId } = await params;
   const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Fetch idea with author and tags
-  const { data: idea, error } = await supabase
-    .from("ideas")
-    .select("*, author:profiles(*), tags:idea_tags(tag:tags(*))")
-    .eq("id", id)
-    .single();
+  const idea = await fetchIdeaBySlugOrId(slugOrId);
 
-  if (error || !idea) {
+  if (!idea) {
     notFound();
   }
 
@@ -52,7 +100,7 @@ export default async function IdeaDetailPage({ params }: Props) {
   const { data: ideaImages } = await supabase
     .from("idea_images")
     .select("*")
-    .eq("idea_id", id)
+    .eq("idea_id", idea.id)
     .order("position");
 
   const images = (ideaImages || []).map((img) => ({
@@ -65,7 +113,7 @@ export default async function IdeaDetailPage({ params }: Props) {
   const { data: comments } = await supabase
     .from("comments")
     .select("*, author:profiles(*)")
-    .eq("idea_id", id)
+    .eq("idea_id", idea.id)
     .order("created_at", { ascending: true });
 
   // Check if user voted
@@ -74,7 +122,7 @@ export default async function IdeaDetailPage({ params }: Props) {
     const { data: vote } = await supabase
       .from("votes")
       .select("id")
-      .eq("idea_id", id)
+      .eq("idea_id", idea.id)
       .eq("user_id", user.id)
       .maybeSingle();
     userVoted = !!vote;
@@ -86,7 +134,7 @@ export default async function IdeaDetailPage({ params }: Props) {
     const { data: collab } = await supabase
       .from("collaborators")
       .select("id")
-      .eq("idea_id", id)
+      .eq("idea_id", idea.id)
       .eq("user_id", user.id)
       .maybeSingle();
     hasApplied = !!collab;
@@ -96,7 +144,7 @@ export default async function IdeaDetailPage({ params }: Props) {
   const { data: collaborators } = await supabase
     .from("collaborators")
     .select("*, user:profiles(*)")
-    .eq("idea_id", id)
+    .eq("idea_id", idea.id)
     .order("created_at", { ascending: true });
 
   const isAuthor = user?.id === idea.author_id;
@@ -130,7 +178,7 @@ export default async function IdeaDetailPage({ params }: Props) {
             <h1 className="text-3xl font-bold">{idea.title}</h1>
             {isAuthor && (
               <Link
-                href={`/ideas/${id}/edit`}
+                href={`/ideas/${idea.slug}/edit`}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
               >
                 <Pencil className="h-3.5 w-3.5" />
@@ -383,7 +431,7 @@ export default async function IdeaDetailPage({ params }: Props) {
           {/* Comments */}
           <section className="mt-10 pt-8 border-t border-border">
             <CommentSection
-              ideaId={id}
+              ideaId={idea.id}
               comments={comments || []}
               userId={user?.id}
             />
@@ -394,14 +442,16 @@ export default async function IdeaDetailPage({ params }: Props) {
         <div className="lg:w-64 space-y-4">
           <div className="sticky top-24 space-y-4">
             <VoteButton
-              ideaId={id}
+              ideaId={idea.id}
+              slug={idea.slug}
               voteCount={idea.vote_count}
               userVoted={userVoted}
               userId={user?.id}
             />
             {!isAuthor && (
               <CollaborateButton
-                ideaId={id}
+                ideaId={idea.id}
+                slug={idea.slug}
                 userId={user?.id}
                 hasApplied={hasApplied}
               />

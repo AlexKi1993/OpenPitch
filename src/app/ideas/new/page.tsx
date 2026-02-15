@@ -193,7 +193,7 @@ export default function NewIdeaPage() {
       }
     }
 
-    router.push(`/ideas/${idea.id}`);
+    router.push(`/ideas/${idea.slug}`);
   }
 
   return (

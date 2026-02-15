@@ -98,7 +98,7 @@ export default async function InboxConversationPage({
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
             <Link
-              href={`/ideas/${idea?.id}`}
+              href={`/ideas/${idea?.slug}`}
               className="hover:text-primary transition-colors"
             >
               {idea?.title}

@@ -26,14 +26,14 @@ export default async function DashboardPage() {
   // Fetch user's ideas
   const { data: myIdeas } = await supabase
     .from("ideas")
-    .select("*")
+    .select("*, slug")
     .eq("author_id", user.id)
     .order("created_at", { ascending: false });
 
   // Fetch collaborations
   const { data: myCollabs } = await supabase
     .from("collaborators")
-    .select("*, idea:ideas(id, title, status, author:profiles(full_name))")
+    .select("*, idea:ideas(id, slug, title, status, author:profiles(full_name))")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
               {myIdeas.map((idea) => (
                 <Link
                   key={idea.id}
-                  href={`/ideas/${idea.id}`}
+                  href={`/ideas/${idea.slug}`}
                   className="block rounded-lg border border-border p-4 hover:border-primary/50 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -356,7 +356,7 @@ export default async function DashboardPage() {
               {myCollabs.map((collab) => (
                 <Link
                   key={collab.id}
-                  href={`/ideas/${collab.idea?.id}`}
+                  href={`/ideas/${collab.idea?.slug}`}
                   className="block rounded-lg border border-border p-4 hover:border-primary/50 transition-colors"
                 >
                   <h3 className="font-medium text-sm">
