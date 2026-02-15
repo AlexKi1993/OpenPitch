@@ -14,12 +14,28 @@ export default function ProfileEditor({ profile }: { profile: Profile }) {
   const [skillsText, setSkillsText] = useState(
     (profile.skills || []).join(", ")
   );
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
+  function isValidWebsite(url: string): boolean {
+    if (!url) return true;
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === "https:" || parsed.protocol === "http:";
+    } catch {
+      return false;
+    }
+  }
+
   async function handleSave() {
+    setError("");
     if (fullName.length > 100 || bio.length > 1000 || website.length > 200 || skillsText.length > 500) {
+      return;
+    }
+    if (!isValidWebsite(website)) {
+      setError("Bitte eine gültige URL eingeben (https://...)");
       return;
     }
     setLoading(true);
@@ -108,6 +124,10 @@ export default function ProfileEditor({ profile }: { profile: Profile }) {
           className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
         />
       </div>
+
+      {error && (
+        <p className="text-sm text-red-500">{error}</p>
+      )}
 
       <div className="flex gap-3">
         <button
