@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/moderation/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isValidUUID } from "@/lib/moderation/sanitize";
 
 export async function PATCH(
   request: NextRequest,
@@ -10,11 +11,19 @@ export async function PATCH(
   if (authError) return authError;
 
   const { id } = await params;
-  const body = await request.json();
+  if (!isValidUUID(id)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
+
+  const body = await request.json().catch(() => null);
+  if (!body) {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
   const { content } = body;
 
-  if (!content) {
-    return NextResponse.json({ error: "content is required" }, { status: 400 });
+  if (!content || typeof content !== "string") {
+    return NextResponse.json({ error: "content (string) is required" }, { status: 400 });
   }
 
   if (content.length > 5000) {
@@ -30,11 +39,8 @@ export async function PATCH(
     .select("*, author:profiles(*)")
     .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  if (!data) {
+  if (error || !data) {
+    console.error("Moderation comment update error:", error?.message);
     return NextResponse.json({ error: "Comment not found" }, { status: 404 });
   }
 
@@ -49,15 +55,17 @@ export async function DELETE(
   if (authError) return authError;
 
   const { id } = await params;
+  if (!isValidUUID(id)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
+
   const supabase = createAdminClient();
 
-  const { error } = await supabase
-    .from("comments")
-    .delete()
-    .eq("id", id);
+  const { error } = await supabase.from("comments").delete().eq("id", id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Moderation comment delete error:", error.message);
+    return NextResponse.json({ error: "Delete failed" }, { status: 500 });
   }
 
   return NextResponse.json({ message: "Comment deleted" });

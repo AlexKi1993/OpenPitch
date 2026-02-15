@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/moderation/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isValidUUID } from "@/lib/moderation/sanitize";
 
 export async function GET(
   request: NextRequest,
@@ -10,6 +11,10 @@ export async function GET(
   if (authError) return authError;
 
   const { id } = await params;
+  if (!isValidUUID(id)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
+
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
@@ -26,6 +31,8 @@ export async function GET(
   return NextResponse.json(data);
 }
 
+const VALID_STATUSES = ["open", "in_progress", "implemented", "archived"];
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -34,7 +41,15 @@ export async function PATCH(
   if (authError) return authError;
 
   const { id } = await params;
-  const body = await request.json();
+  if (!isValidUUID(id)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
+
+  const body = await request.json().catch(() => null);
+  if (!body) {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
   const supabase = createAdminClient();
 
   const allowedFields = [
@@ -44,7 +59,19 @@ export async function PATCH(
 
   const updates: Record<string, unknown> = {};
   for (const field of allowedFields) {
-    if (field in body) updates[field] = body[field];
+    if (field in body) {
+      if (typeof body[field] !== "string") {
+        return NextResponse.json({ error: `${field} must be a string` }, { status: 400 });
+      }
+      if (body[field].length > 5000) {
+        return NextResponse.json({ error: `${field} exceeds max length` }, { status: 400 });
+      }
+      updates[field] = body[field];
+    }
+  }
+
+  if (updates.status && !VALID_STATUSES.includes(updates.status as string)) {
+    return NextResponse.json({ error: "Invalid status value" }, { status: 400 });
   }
 
   if (Object.keys(updates).length === 0) {
@@ -60,12 +87,9 @@ export async function PATCH(
     .select()
     .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  if (!data) {
-    return NextResponse.json({ error: "Idea not found" }, { status: 404 });
+  if (error || !data) {
+    console.error("Moderation idea update error:", error?.message);
+    return NextResponse.json({ error: "Update failed" }, { status: 500 });
   }
 
   return NextResponse.json(data);
@@ -79,15 +103,17 @@ export async function DELETE(
   if (authError) return authError;
 
   const { id } = await params;
+  if (!isValidUUID(id)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
+
   const supabase = createAdminClient();
 
-  const { error } = await supabase
-    .from("ideas")
-    .delete()
-    .eq("id", id);
+  const { error } = await supabase.from("ideas").delete().eq("id", id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Moderation idea delete error:", error.message);
+    return NextResponse.json({ error: "Delete failed" }, { status: 500 });
   }
 
   return NextResponse.json({ message: "Idea deleted" });

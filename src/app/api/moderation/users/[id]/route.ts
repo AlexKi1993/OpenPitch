@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/moderation/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isValidUUID } from "@/lib/moderation/sanitize";
 
 export async function GET(
   request: NextRequest,
@@ -10,6 +11,10 @@ export async function GET(
   if (authError) return authError;
 
   const { id } = await params;
+  if (!isValidUUID(id)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
+
   const supabase = createAdminClient();
 
   const { data: profile, error } = await supabase
@@ -22,7 +27,6 @@ export async function GET(
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  // Fetch stats
   const [ideas, stories, lessons, comments, storyComments, lessonComments] =
     await Promise.all([
       supabase.from("ideas").select("id", { count: "exact", head: true }).eq("author_id", id),

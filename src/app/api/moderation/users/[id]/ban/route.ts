@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/moderation/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isValidUUID } from "@/lib/moderation/sanitize";
 
 export async function POST(
   request: NextRequest,
@@ -10,8 +11,12 @@ export async function POST(
   if (authError) return authError;
 
   const { id } = await params;
+  if (!isValidUUID(id)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
+
   const body = await request.json().catch(() => ({}));
-  const reason = body.reason || null;
+  const reason = typeof body.reason === "string" ? body.reason.slice(0, 1000) : null;
 
   const supabase = createAdminClient();
 
@@ -22,12 +27,9 @@ export async function POST(
     .select()
     .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  if (!data) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  if (error || !data) {
+    console.error("Moderation ban error:", error?.message);
+    return NextResponse.json({ error: "Ban failed" }, { status: 500 });
   }
 
   return NextResponse.json({ message: "User banned", user: data });
@@ -41,6 +43,10 @@ export async function DELETE(
   if (authError) return authError;
 
   const { id } = await params;
+  if (!isValidUUID(id)) {
+    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+  }
+
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
@@ -50,12 +56,9 @@ export async function DELETE(
     .select()
     .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  if (!data) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  if (error || !data) {
+    console.error("Moderation unban error:", error?.message);
+    return NextResponse.json({ error: "Unban failed" }, { status: 500 });
   }
 
   return NextResponse.json({ message: "User unbanned", user: data });

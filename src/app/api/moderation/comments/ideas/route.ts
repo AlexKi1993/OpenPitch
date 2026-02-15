@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/moderation/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isValidUUID } from "@/lib/moderation/sanitize";
 
 export async function POST(request: NextRequest) {
   const authError = validateApiKey(request);
@@ -8,14 +9,22 @@ export async function POST(request: NextRequest) {
 
   const miraProfileId = process.env.MIRA_PROFILE_ID;
   if (!miraProfileId) {
-    return NextResponse.json({ error: "MIRA_PROFILE_ID not configured" }, { status: 500 });
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
   }
 
-  const body = await request.json();
+  const body = await request.json().catch(() => null);
+  if (!body) {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
   const { idea_id, content } = body;
 
-  if (!idea_id || !content) {
-    return NextResponse.json({ error: "idea_id and content are required" }, { status: 400 });
+  if (!idea_id || !content || typeof content !== "string") {
+    return NextResponse.json({ error: "idea_id and content (string) are required" }, { status: 400 });
+  }
+
+  if (!isValidUUID(idea_id)) {
+    return NextResponse.json({ error: "Invalid idea_id" }, { status: 400 });
   }
 
   if (content.length > 5000) {
@@ -31,7 +40,8 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Moderation comment create error:", error.message);
+    return NextResponse.json({ error: "Comment creation failed" }, { status: 500 });
   }
 
   return NextResponse.json(data, { status: 201 });

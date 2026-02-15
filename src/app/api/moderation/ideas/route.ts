@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/moderation/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sanitizeSearch, safeOffset, safeLimit } from "@/lib/moderation/sanitize";
 
 export async function GET(request: NextRequest) {
   const authError = validateApiKey(request);
@@ -9,12 +10,12 @@ export async function GET(request: NextRequest) {
   const supabase = createAdminClient();
   const { searchParams } = new URL(request.url);
 
-  const search = searchParams.get("search") || "";
+  const search = sanitizeSearch(searchParams.get("search") || "");
   const category = searchParams.get("category") || "";
   const status = searchParams.get("status") || "";
   const authorId = searchParams.get("author_id") || "";
-  const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
-  const offset = parseInt(searchParams.get("offset") || "0");
+  const limit = safeLimit(searchParams.get("limit"));
+  const offset = safeOffset(searchParams.get("offset"));
 
   let query = supabase
     .from("ideas")
@@ -32,7 +33,8 @@ export async function GET(request: NextRequest) {
   const { data, error, count } = await query;
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Moderation ideas list error:", error.message);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
   return NextResponse.json({ ideas: data, total: count });
