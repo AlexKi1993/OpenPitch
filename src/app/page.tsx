@@ -18,7 +18,7 @@ export default async function Home() {
   const { data: ideas } = await supabase
     .from("ideas")
     .select("*, author:profiles(*), images:idea_images(*)")
-    .order("vote_count", { ascending: false })
+    .order("created_at", { ascending: false })
     .limit(6);
 
   const { count: ideaCount } = await supabase
