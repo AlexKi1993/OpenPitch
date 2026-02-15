@@ -100,6 +100,29 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Ban check: block banned users from write paths
+  if (user) {
+    const writePaths = ["/ideas/new", "/stories/new", "/lessons/new"];
+    const isWritePath = writePaths.some((path) =>
+      request.nextUrl.pathname.startsWith(path)
+    );
+
+    if (isWritePath) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_banned")
+        .eq("id", user.id)
+        .single();
+
+      if (profile?.is_banned) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/dashboard";
+        url.searchParams.set("banned", "true");
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
   // Redirect logged-in users away from auth pages
   const authPaths = ["/login", "/register"];
   const isAuthPage = authPaths.some((path) =>

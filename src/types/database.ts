@@ -5,6 +5,8 @@ export interface Profile {
   avatar_url: string | null;
   website: string | null;
   skills: string[];
+  is_banned: boolean;
+  ban_reason: string | null;
   created_at: string;
   updated_at: string;
 }
