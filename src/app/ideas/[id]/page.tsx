@@ -291,58 +291,94 @@ export default async function IdeaDetailPage({ params }: Props) {
           </section>
 
           {/* Collaborators */}
-          {collaborators && collaborators.length > 0 && (
-            <section className="mt-8">
-              <h2 className="text-xl font-semibold mb-4">
-                Umsetzer ({collaborators.length})
-              </h2>
-              <div className="space-y-3">
-                {collaborators.map((collab) => (
-                  <div
-                    key={collab.id}
-                    className="flex items-start gap-3 rounded-lg border border-border p-4"
-                  >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-medium shrink-0">
-                      {getInitials(collab.user?.full_name || null)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          href={`/profile/${collab.user_id}`}
-                          className="text-sm font-medium hover:text-primary"
-                        >
-                          {collab.user?.full_name || "Anonym"}
-                        </Link>
-                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                          {collab.role}
-                        </span>
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                            collab.status === "accepted"
-                              ? "bg-green-100 text-green-700"
-                              : collab.status === "rejected"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-yellow-100 text-yellow-700"
-                          }`}
-                        >
-                          {collab.status === "accepted"
-                            ? "Akzeptiert"
-                            : collab.status === "rejected"
-                              ? "Abgelehnt"
-                              : "Ausstehend"}
-                        </span>
+          {isAuthor
+            ? collaborators && collaborators.length > 0 && (
+                <section className="mt-8">
+                  <h2 className="text-xl font-semibold mb-4">
+                    Umsetzer ({collaborators.length})
+                  </h2>
+                  <div className="space-y-3">
+                    {collaborators.map((collab) => (
+                      <div
+                        key={collab.id}
+                        className="flex items-start gap-3 rounded-lg border border-border p-4"
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-medium shrink-0">
+                          {getInitials(collab.user?.full_name || null)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <Link
+                              href={`/profile/${collab.user_id}`}
+                              className="text-sm font-medium hover:text-primary"
+                            >
+                              {collab.user?.full_name || "Anonym"}
+                            </Link>
+                            <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                              {collab.role}
+                            </span>
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                                collab.status === "accepted"
+                                  ? "bg-green-100 text-green-700"
+                                  : collab.status === "rejected"
+                                    ? "bg-red-100 text-red-700"
+                                    : "bg-yellow-100 text-yellow-700"
+                              }`}
+                            >
+                              {collab.status === "accepted"
+                                ? "Akzeptiert"
+                                : collab.status === "rejected"
+                                  ? "Abgelehnt"
+                                  : "Ausstehend"}
+                            </span>
+                          </div>
+                          {collab.message && (
+                            <p className="mt-1 text-sm text-muted-foreground">
+                              {collab.message}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      {collab.message && (
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {collab.message}
-                        </p>
-                      )}
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </section>
-          )}
+                </section>
+              )
+            : (() => {
+                const accepted = collaborators?.filter(
+                  (c) => c.status === "accepted"
+                );
+                return accepted && accepted.length > 0 ? (
+                  <section className="mt-8">
+                    <h2 className="text-xl font-semibold mb-4">
+                      Team ({accepted.length})
+                    </h2>
+                    <div className="space-y-3">
+                      {accepted.map((collab) => (
+                        <div
+                          key={collab.id}
+                          className="flex items-center gap-3 rounded-lg border border-border p-4"
+                        >
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-medium shrink-0">
+                            {getInitials(collab.user?.full_name || null)}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Link
+                              href={`/profile/${collab.user_id}`}
+                              className="text-sm font-medium hover:text-primary"
+                            >
+                              {collab.user?.full_name || "Anonym"}
+                            </Link>
+                            <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                              {collab.role}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                ) : null;
+              })()}
 
           {/* Comments */}
           <section className="mt-10 pt-8 border-t border-border">
