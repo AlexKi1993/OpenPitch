@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Lightbulb, Menu, X, LogOut, User, LayoutDashboard, Sun, Moon } from "lucide-react";
+import { Lightbulb, Menu, X, LogOut, User, LayoutDashboard, Sun, Moon, Mail } from "lucide-react";
 import { useTheme } from "next-themes";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -13,6 +13,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const router = useRouter();
   const supabase = createClient();
   const { theme, setTheme } = useTheme();
@@ -34,6 +35,49 @@ export default function Navbar() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setUnreadCount(0);
+      return;
+    }
+
+    async function fetchUnread() {
+      // Get collaborator IDs where user is participant (as applicant or idea author)
+      const { data: asApplicant } = await supabase
+        .from("collaborators")
+        .select("id")
+        .eq("user_id", user!.id);
+
+      const { data: asAuthor } = await supabase
+        .from("collaborators")
+        .select("id, idea:ideas!inner(author_id)")
+        .eq("idea.author_id", user!.id);
+
+      const collabIds = new Set<string>();
+      asApplicant?.forEach((c) => collabIds.add(c.id));
+      asAuthor?.forEach((c) => collabIds.add(c.id));
+
+      if (collabIds.size === 0) {
+        setUnreadCount(0);
+        return;
+      }
+
+      const { count } = await supabase
+        .from("messages")
+        .select("*", { count: "exact", head: true })
+        .in("collaborator_id", Array.from(collabIds))
+        .neq("sender_id", user!.id)
+        .eq("is_read", false);
+
+      setUnreadCount(count || 0);
+    }
+
+    fetchUnread();
+    // Poll every 30 seconds
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -78,6 +122,20 @@ export default function Navbar() {
                 className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors"
               >
                 Idee pitchen
+              </Link>
+            )}
+            {user && (
+              <Link
+                href="/inbox"
+                className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                aria-label="Inbox"
+              >
+                <Mail className="h-4 w-4" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
               </Link>
             )}
             {mounted && (
@@ -186,6 +244,18 @@ export default function Navbar() {
                   className="block px-3 py-2 text-primary font-medium"
                 >
                   Idee pitchen
+                </Link>
+                <Link
+                  href="/inbox"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-muted-foreground hover:text-foreground"
+                >
+                  Inbox
+                  {unreadCount > 0 && (
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
                 </Link>
                 <Link
                   href="/dashboard"

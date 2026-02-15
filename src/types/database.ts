@@ -89,6 +89,17 @@ export interface Collaborator {
   idea?: Idea;
 }
 
+export interface Message {
+  id: string;
+  collaborator_id: string;
+  sender_id: string;
+  content: string;
+  is_read: boolean;
+  created_at: string;
+  // Joined
+  sender?: Profile;
+}
+
 export const CATEGORIES = [
   "SaaS",
   "E-Commerce",

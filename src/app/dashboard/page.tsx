@@ -41,7 +41,7 @@ export default async function DashboardPage() {
   const { data: requests } = await supabase
     .from("collaborators")
     .select(
-      "*, user:profiles(full_name), idea:ideas!inner(id, title, author_id)"
+      "*, user:profiles(id, full_name), idea:ideas!inner(id, title, author_id)"
     )
     .eq("idea.author_id", user.id)
     .eq("status", "pending")
@@ -305,9 +305,12 @@ export default async function DashboardPage() {
                   className="rounded-lg border border-border p-4"
                 >
                   <div className="flex items-center gap-2 text-sm">
-                    <span className="font-medium">
+                    <Link
+                      href={`/profile/${req.user_id}`}
+                      className="font-medium text-primary hover:underline"
+                    >
                       {req.user?.full_name || "Jemand"}
-                    </span>
+                    </Link>
                     <span className="text-muted-foreground">
                       will bei &quot;{req.idea?.title}&quot; mitmachen
                     </span>
@@ -323,6 +326,15 @@ export default async function DashboardPage() {
                       {req.message}
                     </p>
                   )}
+                  <div className="mt-3">
+                    <Link
+                      href={`/inbox/${req.id}`}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" />
+                      Antworten
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
