@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 
 interface StoryVoteButtonProps {
   storyId: string;
+  slug?: string;
   voteCount: number;
   userVoted: boolean;
   userId?: string;
@@ -14,6 +15,7 @@ interface StoryVoteButtonProps {
 
 export default function StoryVoteButton({
   storyId,
+  slug,
   voteCount,
   userVoted,
   userId,
@@ -26,7 +28,7 @@ export default function StoryVoteButton({
 
   async function handleVote() {
     if (!userId) {
-      router.push("/login?redirect=/stories/" + storyId);
+      router.push("/login?redirect=/stories/" + (slug || storyId));
       return;
     }
 

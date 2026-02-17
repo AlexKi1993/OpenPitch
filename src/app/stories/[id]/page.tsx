@@ -5,6 +5,7 @@ import { timeAgo, getInitials } from "@/lib/utils";
 import { STORY_TYPES } from "@/types/database";
 import StoryVoteButton from "@/components/StoryVoteButton";
 import StoryCommentSection from "@/components/StoryCommentSection";
+import type { Metadata } from "next";
 import {
   ArrowLeft,
   Calendar,
@@ -20,22 +21,66 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-export default async function StoryDetailPage({ params }: Props) {
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+async function fetchStoryBySlugOrId(slugOrId: string) {
+  const supabase = await createClient();
+
+  const { data: bySlug } = await supabase
+    .from("stories")
+    .select("*, author:profiles(*)")
+    .eq("slug", slugOrId)
+    .single();
+
+  if (bySlug) return bySlug;
+
+  if (UUID_RE.test(slugOrId)) {
+    const { data: byId } = await supabase
+      .from("stories")
+      .select("*, author:profiles(*)")
+      .eq("id", slugOrId)
+      .single();
+
+    return byId;
+  }
+
+  return null;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
+  const story = await fetchStoryBySlugOrId(id);
+
+  if (!story) return { title: "Story nicht gefunden" };
+
+  const description =
+    story.idea_summary.length > 160
+      ? story.idea_summary.slice(0, 157) + "..."
+      : story.idea_summary;
+
+  return {
+    title: story.title,
+    description,
+    openGraph: {
+      title: story.title,
+      description,
+      type: "article",
+    },
+  };
+}
+
+export default async function StoryDetailPage({ params }: Props) {
+  const { id: slugOrId } = await params;
   const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Fetch story with author
-  const { data: story, error } = await supabase
-    .from("stories")
-    .select("*, author:profiles(*)")
-    .eq("id", id)
-    .single();
+  const story = await fetchStoryBySlugOrId(slugOrId);
 
-  if (error || !story) {
+  if (!story) {
     notFound();
   }
 
@@ -43,7 +88,7 @@ export default async function StoryDetailPage({ params }: Props) {
   const { data: comments } = await supabase
     .from("story_comments")
     .select("*, author:profiles(*)")
-    .eq("story_id", id)
+    .eq("story_id", story.id)
     .order("created_at", { ascending: true });
 
   // Check if user voted
@@ -52,7 +97,7 @@ export default async function StoryDetailPage({ params }: Props) {
     const { data: vote } = await supabase
       .from("story_votes")
       .select("id")
-      .eq("story_id", id)
+      .eq("story_id", story.id)
       .eq("user_id", user.id)
       .maybeSingle();
     userVoted = !!vote;
@@ -86,7 +131,7 @@ export default async function StoryDetailPage({ params }: Props) {
             <h1 className="text-3xl font-bold">{story.title}</h1>
             {user?.id === story.author_id && (
               <Link
-                href={`/stories/${id}/edit`}
+                href={`/stories/${story.slug}/edit`}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
               >
                 <Pencil className="h-3.5 w-3.5" />
@@ -175,7 +220,7 @@ export default async function StoryDetailPage({ params }: Props) {
           {/* Comments */}
           <section className="mt-10 pt-8 border-t border-border">
             <StoryCommentSection
-              storyId={id}
+              storyId={story.id}
               comments={comments || []}
               userId={user?.id}
             />
@@ -186,7 +231,8 @@ export default async function StoryDetailPage({ params }: Props) {
         <div className="lg:w-64 space-y-4">
           <div className="sticky top-24 space-y-4">
             <StoryVoteButton
-              storyId={id}
+              storyId={story.id}
+              slug={story.slug}
               voteCount={story.vote_count}
               userVoted={userVoted}
               userId={user?.id}

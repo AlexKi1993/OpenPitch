@@ -90,7 +90,7 @@ export default function NewStoryPage() {
       return;
     }
 
-    router.push(`/stories/${story.id}`);
+    router.push(`/stories/${story.slug}`);
   }
 
   return (

@@ -6,8 +6,13 @@ import { createClient } from "@/lib/supabase/client";
 import { BookOpen, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function EditStoryPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id: slugOrId } = useParams<{ id: string }>();
+  const [storyUuid, setStoryUuid] = useState("");
+  const [storySlug, setStorySlug] = useState("");
   const [title, setTitle] = useState("");
   const [storyType, setStoryType] = useState<"success" | "fuckup">("success");
   const [ideaSummary, setIdeaSummary] = useState("");
@@ -28,23 +33,39 @@ export default function EditStoryPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        router.push(`/login?redirect=/stories/${id}/edit`);
+        router.push(`/login?redirect=/stories/${slugOrId}/edit`);
         return;
       }
 
-      const { data: story, error: storyError } = await supabase
+      // Try slug first, then UUID fallback
+      let story = null;
+      const { data: bySlug } = await supabase
         .from("stories")
         .select("*")
-        .eq("id", id)
+        .eq("slug", slugOrId)
         .single();
 
-      if (storyError || !story) {
+      if (bySlug) {
+        story = bySlug;
+      } else if (UUID_RE.test(slugOrId)) {
+        const { data: byId } = await supabase
+          .from("stories")
+          .select("*")
+          .eq("id", slugOrId)
+          .single();
+        story = byId;
+      }
+
+      if (!story) {
         router.push("/stories");
         return;
       }
 
+      setStoryUuid(story.id);
+      setStorySlug(story.slug);
+
       if (story.author_id !== user.id) {
-        router.push(`/stories/${id}`);
+        router.push(`/stories/${story.slug}`);
         return;
       }
 
@@ -60,7 +81,7 @@ export default function EditStoryPage() {
     }
 
     loadData();
-  }, [id]);
+  }, [slugOrId]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -72,7 +93,7 @@ export default function EditStoryPage() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      router.push(`/login?redirect=/stories/${id}/edit`);
+      router.push(`/login?redirect=/stories/${storySlug}/edit`);
       return;
     }
 
@@ -127,7 +148,7 @@ export default function EditStoryPage() {
         lessons_learned: lessonsLearned,
         advice,
       })
-      .eq("id", id);
+      .eq("id", storyUuid);
 
     if (updateError) {
       setError(
@@ -137,7 +158,7 @@ export default function EditStoryPage() {
       return;
     }
 
-    router.push(`/stories/${id}`);
+    router.push(`/stories/${storySlug}`);
   }
 
   if (initialLoading) {
@@ -156,7 +177,7 @@ export default function EditStoryPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <Link
-        href={`/stories/${id}`}
+        href={`/stories/${storySlug}`}
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -312,7 +333,7 @@ export default function EditStoryPage() {
         {/* Submit */}
         <div className="flex gap-3 pt-4 border-t border-border">
           <Link
-            href={`/stories/${id}`}
+            href={`/stories/${storySlug}`}
             className="rounded-lg border border-border px-6 py-2.5 text-sm font-medium hover:bg-muted transition-colors"
           >
             Abbrechen

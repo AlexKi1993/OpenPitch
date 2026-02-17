@@ -195,7 +195,7 @@ export default async function DashboardPage() {
                 return (
                   <Link
                     key={story.id}
-                    href={`/stories/${story.id}`}
+                    href={`/stories/${story.slug}`}
                     className="block rounded-lg border border-border p-4 hover:border-primary/50 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-3">
