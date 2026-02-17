@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { timeAgo, getInitials } from "@/lib/utils";
 import LessonVoteButton from "@/components/LessonVoteButton";
 import LessonCommentSection from "@/components/LessonCommentSection";
+import type { Metadata } from "next";
 import {
   ArrowLeft,
   Calendar,
@@ -17,22 +18,66 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-export default async function LessonDetailPage({ params }: Props) {
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+async function fetchLessonBySlugOrId(slugOrId: string) {
+  const supabase = await createClient();
+
+  const { data: bySlug } = await supabase
+    .from("lessons")
+    .select("*, author:profiles(*)")
+    .eq("slug", slugOrId)
+    .single();
+
+  if (bySlug) return bySlug;
+
+  if (UUID_RE.test(slugOrId)) {
+    const { data: byId } = await supabase
+      .from("lessons")
+      .select("*, author:profiles(*)")
+      .eq("id", slugOrId)
+      .single();
+
+    return byId;
+  }
+
+  return null;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
+  const lesson = await fetchLessonBySlugOrId(id);
+
+  if (!lesson) return { title: "Lesson nicht gefunden" };
+
+  const description =
+    lesson.situation.length > 160
+      ? lesson.situation.slice(0, 157) + "..."
+      : lesson.situation;
+
+  return {
+    title: lesson.title,
+    description,
+    openGraph: {
+      title: lesson.title,
+      description,
+      type: "article",
+    },
+  };
+}
+
+export default async function LessonDetailPage({ params }: Props) {
+  const { id: slugOrId } = await params;
   const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Fetch lesson with author
-  const { data: lesson, error } = await supabase
-    .from("lessons")
-    .select("*, author:profiles(*)")
-    .eq("id", id)
-    .single();
+  const lesson = await fetchLessonBySlugOrId(slugOrId);
 
-  if (error || !lesson) {
+  if (!lesson) {
     notFound();
   }
 
@@ -40,7 +85,7 @@ export default async function LessonDetailPage({ params }: Props) {
   const { data: comments } = await supabase
     .from("lesson_comments")
     .select("*, author:profiles(*)")
-    .eq("lesson_id", id)
+    .eq("lesson_id", lesson.id)
     .order("created_at", { ascending: true });
 
   // Check if user voted
@@ -49,7 +94,7 @@ export default async function LessonDetailPage({ params }: Props) {
     const { data: vote } = await supabase
       .from("lesson_votes")
       .select("id")
-      .eq("lesson_id", id)
+      .eq("lesson_id", lesson.id)
       .eq("user_id", user.id)
       .maybeSingle();
     userVoted = !!vote;
@@ -79,7 +124,7 @@ export default async function LessonDetailPage({ params }: Props) {
             <h1 className="text-3xl font-bold">{lesson.title}</h1>
             {user?.id === lesson.author_id && (
               <Link
-                href={`/lessons/${id}/edit`}
+                href={`/lessons/${lesson.slug}/edit`}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
               >
                 <Pencil className="h-3.5 w-3.5" />
@@ -142,7 +187,7 @@ export default async function LessonDetailPage({ params }: Props) {
           {/* Comments */}
           <section className="mt-10 pt-8 border-t border-border">
             <LessonCommentSection
-              lessonId={id}
+              lessonId={lesson.id}
               comments={comments || []}
               userId={user?.id}
             />
@@ -153,7 +198,8 @@ export default async function LessonDetailPage({ params }: Props) {
         <div className="lg:w-64 space-y-4">
           <div className="sticky top-24 space-y-4">
             <LessonVoteButton
-              lessonId={id}
+              lessonId={lesson.id}
+              slug={lesson.slug}
               voteCount={lesson.vote_count}
               userVoted={userVoted}
               userId={user?.id}

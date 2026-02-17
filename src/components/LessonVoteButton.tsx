@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 
 interface LessonVoteButtonProps {
   lessonId: string;
+  slug?: string;
   voteCount: number;
   userVoted: boolean;
   userId?: string;
@@ -14,6 +15,7 @@ interface LessonVoteButtonProps {
 
 export default function LessonVoteButton({
   lessonId,
+  slug,
   voteCount,
   userVoted,
   userId,
@@ -26,7 +28,7 @@ export default function LessonVoteButton({
 
   async function handleVote() {
     if (!userId) {
-      router.push("/login?redirect=/lessons/" + lessonId);
+      router.push("/login?redirect=/lessons/" + (slug || lessonId));
       return;
     }
 

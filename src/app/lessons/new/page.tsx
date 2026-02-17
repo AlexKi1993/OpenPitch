@@ -77,7 +77,7 @@ export default function NewLessonPage() {
       return;
     }
 
-    router.push(`/lessons/${lesson.id}`);
+    router.push(`/lessons/${lesson.slug}`);
   }
 
   return (

@@ -7,8 +7,13 @@ import { GraduationCap, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { LESSON_CATEGORIES } from "@/types/database";
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function EditLessonPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id: slugOrId } = useParams<{ id: string }>();
+  const [lessonUuid, setLessonUuid] = useState("");
+  const [lessonSlug, setLessonSlug] = useState("");
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Sonstiges");
   const [situation, setSituation] = useState("");
@@ -27,23 +32,39 @@ export default function EditLessonPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        router.push(`/login?redirect=/lessons/${id}/edit`);
+        router.push(`/login?redirect=/lessons/${slugOrId}/edit`);
         return;
       }
 
-      const { data: lesson, error: lessonError } = await supabase
+      // Try slug first, then UUID fallback
+      let lesson = null;
+      const { data: bySlug } = await supabase
         .from("lessons")
         .select("*")
-        .eq("id", id)
+        .eq("slug", slugOrId)
         .single();
 
-      if (lessonError || !lesson) {
+      if (bySlug) {
+        lesson = bySlug;
+      } else if (UUID_RE.test(slugOrId)) {
+        const { data: byId } = await supabase
+          .from("lessons")
+          .select("*")
+          .eq("id", slugOrId)
+          .single();
+        lesson = byId;
+      }
+
+      if (!lesson) {
         router.push("/lessons");
         return;
       }
 
+      setLessonUuid(lesson.id);
+      setLessonSlug(lesson.slug);
+
       if (lesson.author_id !== user.id) {
-        router.push(`/lessons/${id}`);
+        router.push(`/lessons/${lesson.slug}`);
         return;
       }
 
@@ -57,7 +78,7 @@ export default function EditLessonPage() {
     }
 
     loadData();
-  }, [id]);
+  }, [slugOrId]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -69,7 +90,7 @@ export default function EditLessonPage() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      router.push(`/login?redirect=/lessons/${id}/edit`);
+      router.push(`/login?redirect=/lessons/${lessonSlug}/edit`);
       return;
     }
 
@@ -106,7 +127,7 @@ export default function EditLessonPage() {
         learning,
         advice,
       })
-      .eq("id", id);
+      .eq("id", lessonUuid);
 
     if (updateError) {
       setError(
@@ -116,7 +137,7 @@ export default function EditLessonPage() {
       return;
     }
 
-    router.push(`/lessons/${id}`);
+    router.push(`/lessons/${lessonSlug}`);
   }
 
   if (initialLoading) {
@@ -135,7 +156,7 @@ export default function EditLessonPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <Link
-        href={`/lessons/${id}`}
+        href={`/lessons/${lessonSlug}`}
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -245,7 +266,7 @@ export default function EditLessonPage() {
         {/* Submit */}
         <div className="flex gap-3 pt-4 border-t border-border">
           <Link
-            href={`/lessons/${id}`}
+            href={`/lessons/${lessonSlug}`}
             className="rounded-lg border border-border px-6 py-2.5 text-sm font-medium hover:bg-muted transition-colors"
           >
             Abbrechen

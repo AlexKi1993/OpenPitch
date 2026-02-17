@@ -10,7 +10,7 @@ interface LessonCardProps {
 export default function LessonCard({ lesson }: LessonCardProps) {
   return (
     <Link
-      href={`/lessons/${lesson.id}`}
+      href={`/lessons/${lesson.slug}`}
       className="group block overflow-hidden rounded-xl border border-border bg-card p-4 sm:p-6 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
     >
       <div className="flex gap-4">

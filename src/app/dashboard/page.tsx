@@ -249,7 +249,7 @@ export default async function DashboardPage() {
               {myLessons.map((lesson) => (
                 <Link
                   key={lesson.id}
-                  href={`/lessons/${lesson.id}`}
+                  href={`/lessons/${lesson.slug}`}
                   className="block rounded-lg border border-border p-4 hover:border-primary/50 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-3">
