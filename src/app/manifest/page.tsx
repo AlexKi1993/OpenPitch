@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Flame,
@@ -8,6 +9,26 @@ import {
   Rocket,
   ArrowLeft,
 } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Das OpenPitch Manifest - Warum OpenPitch existiert",
+  description:
+    "Gute Ideen gehören der Welt. OpenPitch ist ein Gegen-Narrativ zum deutschen Betriebssystem aus Bürokratie und Analyse-Paralyse. Bauen statt Planen.",
+  openGraph: {
+    title: "Das OpenPitch Manifest",
+    description:
+      "Gute Ideen gehören der Welt. OpenPitch ist ein Gegen-Narrativ zum deutschen Betriebssystem aus Bürokratie und Analyse-Paralyse.",
+    url: "https://www.openpitch.eu/manifest",
+    siteName: "OpenPitch",
+    type: "article",
+  },
+  twitter: {
+    card: "summary",
+    title: "Das OpenPitch Manifest",
+    description:
+      "Gute Ideen gehören der Welt. OpenPitch ist ein Gegen-Narrativ zum deutschen Betriebssystem aus Bürokratie und Analyse-Paralyse.",
+  },
+};
 
 export default function ManifestPage() {
   return (
